@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+from argparse import ArgumentParser, RawTextHelpFormatter
+from json import dumps
+
+from ssdecoder.ssdecoder import decode_string, SSDecoder
+
+
+def __init__():
+    parser = ArgumentParser(
+        formatter_class = RawTextHelpFormatter,
+        description = 'Decode SS(R) string.',
+        epilog = 'Liucongcong congcong_liu@icloud.com.'
+    )
+    parser.add_argument(
+        'query', type = str,
+        help = 'SS(R) string.'
+    )
+    parser.add_argument(
+        '-o', '--output', type = str, default = '', required = False, metavar = 'json',
+        help = 'Output to json file.'
+    )
+    parser.add_argument('-v', '--version', action = 'version', version = '%(prog)s 1.0.0')
+    return parser.parse_args()
+
+
+def dump_json(hash_list, output_file):
+    open_file = open(output_file, 'w')
+    open_file.write(dumps(hash_list, ensure_ascii = False, indent = 4))
+    open_file.close()
+    return None
+
+
+if __name__ == '__main__':
+    parameters = __init__()
+    ssdecoder = SSDecoder()
+    hash_list = list()
+    if parameters.query.startswith('ss://'):
+        print('Decoding SS(R):', parameters.query, flush = True)
+        hash_list.append(ssdecoder.decode(parameters.query, 'ss'))
+    elif parameters.query.startswith('ssr://'):
+        print('Decoding SS(R):', parameters.query, flush = True)
+        hash_list.append(ssdecoder.decode(parameters.query, 'ssr'))
+    else:
+        for string in decode_string(parameters.query).splitlines():
+            print('Decoding SS(R):', string, flush = True)
+            if string.startswith('ss://'):
+                hash_list.append(ssdecoder.decode(string, 'ss'))
+            elif string.startswith('ssr://'):
+                hash_list.append(ssdecoder.decode(string, 'ssr'))
+    if parameters.output:
+        if not parameters.output.lower().endswith('.json'):
+            parameters.output += '.json'
+        dump_json(hash_list, parameters.output)
